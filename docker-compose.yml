@@ -1,0 +1,66 @@
+version: '3.3'
+
+services:
+  products:
+    build: ./products
+    command: uvicorn products-app.products_main:app --reload --host 0.0.0.0 --port 8001
+    volumes:
+      - ./products/:/app/
+    ports:
+      - 8001:8001
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@products_db/products_database
+
+  products_db:
+    image: postgres
+    volumes:
+      - postgres_data_products:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=products_database
+
+
+  orders:
+    build: ./orders
+    command: uvicorn orders-app.orders_main:app --reload --host 0.0.0.0 --port 8002
+    volumes:
+      - ./orders/:/app/
+    ports:
+      - 8002:8002
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@orders_db/orders_database
+
+  orders_db:
+    image: postgres
+    volumes:
+      - postgres_data_orders:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=orders_database
+      
+  reviews:
+    build: ./reviews
+    command: uvicorn reviews-app.reviews_main:app --reload --host 0.0.0.0 --port 8003
+    volumes:
+      - ./reviews/:/app/
+    ports:
+      - 8003:8003
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@reviews_db/reviews_database
+        
+  reviews_db:
+    image: postgres
+    volumes:
+      - postgres_data_reviews:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=reviews_database
+
+volumes:
+  postgres_data_adprovider:
+  postgres_data_products:
+  postgres_data_orders:
+  postgres_data_reviews:
