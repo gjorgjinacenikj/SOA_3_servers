@@ -12,14 +12,14 @@ scrape_configs:
 - job_name: products
   metrics_path: /metrics
   static_configs:
-  - targets: ['products:8001']
+  - targets: ['products:7001']
 
 - job_name: orders
   metrics_path: /metrics
-  static_configs:
-  - targets: ['orders:8002']
+  static_configs:F
+  - targets: ['orders:7002']
 
 - job_name: reviews
   metrics_path: /metrics
   static_configs:
-  - targets: ['reviews:8003']
+  - targets: ['reviews:7003']
