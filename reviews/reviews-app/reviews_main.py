@@ -5,10 +5,12 @@ from web.review_controller import review_router
 from fastapi.middleware.cors import CORSMiddleware
 from config import reviews_ip, reviews_port
 from repository.database import initialize_database
-
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 app = FastAPI()
 
 origins = [
+    "http://localhost:8004",
+    "http://localhost:9090",
     "http://localhost:4200",
 ]
 
@@ -20,6 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
 
 app.include_router(
     review_router,
@@ -27,6 +31,12 @@ app.include_router(
     dependencies=[Depends(get_db)],
     responses={404: {"description": "Not found"}},
 )
+
+
+@app.get("/")
+def say_hi():
+    return "Hi. This is server reviews"
+
 
 if __name__ == "__main__":
     initialize_database()

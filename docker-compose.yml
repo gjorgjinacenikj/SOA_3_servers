@@ -45,7 +45,7 @@ services:
       - products_ip=products
       - orders_ip=orders
       - reviews_ip=reviews
-      - consul_ip=registrator
+      - consul_ip=consul
       - products_port=8001
       - orders_port=8002
       - reviews_port=8003
@@ -127,6 +127,23 @@ services:
       - reviews_db
       - registrator
       - orders
+
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v2.14.0
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command: --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:6.5.2
+    ports:
+      - 3000:3000
+
 
 volumes:
   postgres_data_products:

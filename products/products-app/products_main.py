@@ -6,13 +6,18 @@ from web.ad_controller import ad_router
 from web.product_controller import product_router
 
 from fastapi.middleware.cors import CORSMiddleware
-
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 from repository.database import initialize_database
 from config import products_ip, products_port
+
+
+
+
 app = FastAPI()
 
 origins = [
     "http://localhost:4200",
+    "http://localhost:9090",
 ]
 
 app.add_middleware(
@@ -23,6 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
 
 app.include_router(
     product_router,
@@ -38,6 +45,8 @@ app.include_router(
     dependencies=[Depends(get_db)],
     responses={404: {"description": "Not found"}},
 )
+
+
 
 if __name__ == "__main__":
     initialize_database()

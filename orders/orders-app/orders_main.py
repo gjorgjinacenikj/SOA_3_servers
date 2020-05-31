@@ -1,6 +1,4 @@
 import os
-
-import consul
 import uvicorn
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
@@ -9,12 +7,15 @@ from repository.database import initialize_database
 from web.order_controller import order_router
 from web.payment_controller import stripe_router
 from config import orders_ip, orders_port, consul_port, consul_ip
-from service_registry import register, deregister
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 app = FastAPI()
 
 #static_dir = str(os.path.abspath(os.path.join(__file__, "..")))
 app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
-# register_to_consul()
+
+
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
 
 app.include_router(
     stripe_router,
@@ -28,13 +29,14 @@ app.include_router(
     responses={404: {"description": "Not found"}},
 )
 
+@app.get("/")
+def say_hi():
+    return "Hi. This is server orders"
+
 if __name__ == "__main__":
 
-    cons = consul.Consul(host=consul_ip, port=consul_port)
-
-
-    register(app_port=orders_port, app_name='orders')
+    #register(app_port=orders_port, app_name='orders', app_ip = orders_ip)
     initialize_database()
     uvicorn.run("orders_main:app", host='0.0.0.0', port=int(orders_port), reload=True)
-    deregister(app_name='orders')
+    #deregister(app_name='orders')
 
