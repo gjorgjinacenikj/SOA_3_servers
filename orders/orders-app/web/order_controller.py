@@ -39,6 +39,6 @@ def create_order(user_id: str, product_id: str, quantity: int, request: Request,
 
 @order_router.get("/order", summary="Checks whether a user has paid for a product")
 def get_order(user_id: str, product_id: str, db:Session = Depends(get_db)):
-    return get_paid_order_by_user_and_product(db, user_id=user_id, product_id=product_id)!=None
+    return get_paid_order_by_user_and_product(db, user_id=user_id, product_id=product_id) is not None
 
 

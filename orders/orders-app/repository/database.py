@@ -6,8 +6,8 @@ from sqlalchemy.orm import sessionmaker
 
 from repository.db_creds import user, password, dbname
 from repository.repo_models import Base, Order
-SQLALCHEMY_DATABASE_URL = "postgresql://{user}:{password}@localhost/{dbname}".format(user=user,password=password,dbname=dbname)
-#SQLALCHEMY_DATABASE_URL = os.getenv('DATABASE_URI')
+#SQLALCHEMY_DATABASE_URL = "postgresql://{user}:{password}@localhost/{dbname}".format(user=user,password=password,dbname=dbname)
+SQLALCHEMY_DATABASE_URL = os.getenv('DATABASE_URI')
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL

@@ -30,4 +30,4 @@ app.include_router(
 
 if __name__ == "__main__":
     initialize_database()
-    uvicorn.run(app, host=reviews_ip, port=reviews_port)
+    uvicorn.run(app, host='0.0.0.0', port=reviews_port)

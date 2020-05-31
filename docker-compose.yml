@@ -1,18 +1,29 @@
 version: '3.3'
 
 services:
-  products:
-    build: ./products
-    command: uvicorn products-app.products_main:app --reload --host 0.0.0.0 --port 8001
-    volumes:
-      - ./products/:/app/
+
+  consul:
+    container_name: consul
+    image: consul
     ports:
-      - 8001:8001
-    environment:
-      - DATABASE_URI=postgresql://postgres:password@products_db/products_database
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+    restart: always
+
+  registrator:
+    container_name: registrator
+    image: gliderlabs/registrator:master
+    volumes:
+      - "/var/run/docker.sock:/tmp/docker.sock"
+    command: consul://consul:8500
+    restart: always
+    depends_on:
+      - consul
 
   products_db:
-    image: postgres
+    container_name: products_db
+    image: postgres:latest
     volumes:
       - postgres_data_products:/var/lib/postgresql/data/
     environment:
@@ -20,38 +31,70 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=products_database
 
+    restart: on-failure
 
-  orders:
-    build: ./orders
-    command: uvicorn orders-app.orders_main:app --reload --host 0.0.0.0 --port 8002
+  products:
+    container_name: products
+    build: ./products
+    #command: uvicorn products-app.products_main:app --reload --host 0.0.0.0 --port 8001
     volumes:
-      - ./orders/:/app/
+      - ./products/:/app/
     ports:
-      - 8002:8002
+      - 8001:8001
     environment:
-      - DATABASE_URI=postgresql://postgres:password@orders_db/orders_database
+      - products_ip=products
+      - orders_ip=orders
+      - reviews_ip=reviews
+      - consul_ip=registrator
+      - products_port=8001
+      - orders_port=8002
+      - reviews_port=8003
+      - consul_port=8500
+      - DATABASE_URI=postgresql://postgres:password@products_db/products_database
+    depends_on:
+      - products_db
+      - registrator
+
 
   orders_db:
-    image: postgres
+    container_name: orders_db
+    image: postgres:latest
     volumes:
       - postgres_data_orders:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=orders_database
-      
-  reviews:
-    build: ./reviews
-    command: uvicorn reviews-app.reviews_main:app --reload --host 0.0.0.0 --port 8003
+
+    restart: on-failure
+
+  orders:
+    container_name: orders
+    build: ./orders
+    #command: uvicorn orders-app.orders_main:app --reload --host 0.0.0.0 --port 8002
     volumes:
-      - ./reviews/:/app/
+      - ./orders/:/app/
     ports:
-      - 8003:8003
+      - 8002:8002
     environment:
-      - DATABASE_URI=postgresql://postgres:password@reviews_db/reviews_database
-        
+      - DATABASE_URI=postgresql://postgres:password@orders_db/orders_database
+      - products_ip=products
+      - orders_ip=orders
+      - reviews_ip=reviews
+      - consul_ip=consul
+      - products_port=8001
+      - orders_port=8002
+      - reviews_port=8003
+      - consul_port=8500
+    depends_on:
+      - orders_db
+      - registrator
+      - products
+
+
   reviews_db:
-    image: postgres
+    container_name: reviews_db
+    image: postgres:latest
     volumes:
       - postgres_data_reviews:/var/lib/postgresql/data/
     environment:
@@ -59,8 +102,33 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=reviews_database
 
+    restart: on-failure
+
+
+  reviews:
+    container_name: reviews
+    build: ./reviews
+    #command: uvicorn reviews-app.reviews_main:app --reload --host 0.0.0.0 --port 8003
+    volumes:
+      - ./reviews/:/app/
+    ports:
+      - 8003:8003
+    environment:
+      - DATABASE_URI=postgresql://postgres:password@reviews_db/reviews_database
+      - products_ip=products
+      - orders_ip=orders
+      - reviews_ip=reviews
+      - consul_ip=registrator
+      - products_port=8001
+      - orders_port=8002
+      - reviews_port=8003
+      - consul_port=8500
+    depends_on:
+      - reviews_db
+      - registrator
+      - orders
+
 volumes:
-  postgres_data_adprovider:
   postgres_data_products:
   postgres_data_orders:
   postgres_data_reviews:
