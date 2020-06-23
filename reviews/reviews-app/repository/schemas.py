@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class Review(BaseModel):
     id: int = None
     product_id: str
-    user_id: str
+    user_id: str = None
     reviewerName: str = None
     helpful: str = None
     reviewText: str = None

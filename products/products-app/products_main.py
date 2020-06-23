@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import Depends, FastAPI
 from repository.database import get_db
+from fastapi import Request
 
 from web.ad_controller import ad_router
 from web.product_controller import product_router
@@ -46,6 +47,10 @@ app.include_router(
     responses={404: {"description": "Not found"}},
 )
 
+@app.get("/")
+def say_hi(request: Request):
+    print(request.headers)
+    return "Hi. This is server products. You are {0}".format(request.headers['X-Consumer-Custom-ID'])
 
 
 if __name__ == "__main__":

@@ -29,10 +29,9 @@ def get_orders(db: Session = Depends(get_db)):
 
 
 @order_router.get(
-    "/create-order",
-    summary="Create an order based on the package you selected",
-    description="Creates an order based on the package you selected")
-def create_order(user_id: str, product_id: str, quantity: int, request: Request, db: Session = Depends(get_db)):
+    "/create-order")
+def create_order(product_id: str, quantity: int, request: Request, db: Session = Depends(get_db)):
+    user_id = request.headers['X-Consumer-Custom-ID']
     order, product = create_and_save_order(db, user_id, product_id, quantity)
     return templates.TemplateResponse("checkout.html", {"request": request, "amount": order.amount_paid,
                                                         "orderId": order.id, "productTitle": product['title'], "productQuantity": quantity})

@@ -1,0 +1,100 @@
+version: '3.3'
+
+services:
+  kong-database:
+    image: postgres:9.6.11-alpine
+    container_name: kong-database
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+    healthcheck:
+      test: pg_isready -U kong && psql -d kong -U kong -c "SELECT 1=1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kong-migration:
+    image: kong:1.0.0rc3-alpine
+    container_name: kong-migration
+    depends_on:
+      - kong-database
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+    command: sh -c "(kong migrations up || kong migrations bootstrap) && touch migrations_run && sleep 30"
+    healthcheck:
+      test: "if [[ -f migrations_run ]] ; then exit 0; else exit 1; fi"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kong:
+    image: kong:1.0.0rc3-alpine
+    container_name: kong
+    depends_on:
+      - kong-database
+      - kong-migration
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - 8000:8000
+      - 8001:8001
+      - 8444:8443
+    healthcheck:
+      test: kong health
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  konga-database:
+    image: mongo:4.1.5
+    container_name: konga-database
+    volumes:
+      - konga_data:/data/db
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: echo 'db.stats().ok' | mongo localhost:27017/konga --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+#  kong-dashboard:
+#    image: pgbi/kong-dashboard:v3
+#    container_name: kong-dashboard
+#    depends_on:
+#      kong:
+#        condition: service_healthy
+#    command: start --kong-url http://kong:8001
+#    ports:
+#      - 8080:8080
+#    restart: on-failure
+
+  konga2:
+    image: pantsel/konga:latest
+    container_name: konga2
+    depends_on:
+      - konga-database
+    volumes:
+      - ./konga/user_seed.js:/app/user_seed.js:ro
+    ports:
+      - 1337:1337
+    environment:
+      DB_ADAPTER: mongo
+      DB_DATABASE: konga
+      DB_HOST: konga-database
+      #KONGA_SEED_USER_DATA_SOURCE_FILE: /app/user_seed.js
+      NODE_ENV: production
+    restart: on-failure
+
+volumes:
+  kong_data:
+  konga_data:

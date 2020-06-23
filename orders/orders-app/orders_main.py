@@ -1,4 +1,6 @@
 import os
+from fastapi import Request
+
 import uvicorn
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
@@ -30,8 +32,9 @@ app.include_router(
 )
 
 @app.get("/")
-def say_hi():
-    return "Hi. This is server orders"
+def say_hi(request: Request):
+    print(request.headers)
+    return "Hi. This is server orders. You are {0}".format(request.headers['X-Consumer-Custom-ID'])
 
 if __name__ == "__main__":
 

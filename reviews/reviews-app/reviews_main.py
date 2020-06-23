@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import Depends, FastAPI
 from repository.database import get_db
+from fastapi import Request
 from web.review_controller import review_router
 from fastapi.middleware.cors import CORSMiddleware
 from config import reviews_ip, reviews_port
@@ -34,8 +35,10 @@ app.include_router(
 
 
 @app.get("/")
-def say_hi():
-    return "Hi. This is server reviews"
+def say_hi(request: Request):
+    print(request.headers)
+    return "Hi. This is server reviews. You are {0}".format(request.headers['X-Consumer-Custom-ID'])
+
 
 
 if __name__ == "__main__":
