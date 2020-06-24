@@ -3,7 +3,6 @@ from fastapi import Depends, FastAPI
 from repository.database import get_db
 from fastapi import Request
 
-from web.ad_controller import ad_router
 from web.product_controller import product_router
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,14 +34,6 @@ app.add_route("/metrics", handle_metrics)
 app.include_router(
     product_router,
     tags=["products"],
-    dependencies=[Depends(get_db)],
-    responses={404: {"description": "Not found"}},
-)
-
-
-app.include_router(
-    ad_router,
-    tags=["ads"],
     dependencies=[Depends(get_db)],
     responses={404: {"description": "Not found"}},
 )
