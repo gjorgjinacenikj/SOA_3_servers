@@ -2,24 +2,6 @@ version: '3.3'
 
 services:
 
-  consul:
-    container_name: consul
-    image: consul
-    ports:
-      - "8300:8300"
-      - "8400:8400"
-      - "8500:8500"
-    restart: always
-
-  registrator:
-    container_name: registrator
-    image: gliderlabs/registrator:master
-    volumes:
-      - "/var/run/docker.sock:/tmp/docker.sock"
-    command: consul://consul:8500
-    restart: always
-    depends_on:
-      - consul
 
   products_db:
     container_name: products_db
@@ -242,8 +224,63 @@ services:
       NODE_ENV: development
     restart: on-failure
 
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.1
+    ports:
+      - "9200:9200"
+      - "9300:9300" #not
+    environment:
+      - discovery.type=single-node
+      - ELASTICSEARCH_USER=elastic
+      - ELASTICSEARCH_PASSWORD=password
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.6.1
+    ports:
+      - "5601:5601"
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_USER: elastic
+      ELASTICSEARCH_PASSWORD: password
+
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.6.1
+    ports:
+      - "9600:9600"
+      - "9500:9500" #not
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logs:/usr/share/logstash/logs
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    container_name: filebeat
+    image: "docker.elastic.co/beats/filebeat:7.2.0"
+    user: root
+    command: filebeat -e -strict.perms=false
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_USER: elastic
+      ELASTICSEARCH_PASSWORD: password
+
+
 
 volumes:
+  elasticsearch_data:
   postgres_data_products:
   postgres_data_orders:
   postgres_data_reviews:
