@@ -12,5 +12,10 @@ This project contains 3 main services: products, orders, and reviews.
         - GET /reviews - returns max 100 reviews
         - GET /reviews?product_id - returns all reviews for a product
         - POST /reviews - creates a new review for the product if the user has previously ordered it
-            - Expected request body: {product_id: string, overall: float,
+            - Expected request body: {product_id: string, overall: float, reviewText: string}
+            
+Basic authentication is enabled with Kong. 
+
+PROJECT SETUP:
+- Run 'docker-compose up --build'
             

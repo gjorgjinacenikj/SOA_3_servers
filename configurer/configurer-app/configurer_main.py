@@ -41,11 +41,11 @@ def say_hi(request: Request):
         requests.post(kong_services_url, service_config)
     time.sleep(3)
     for service_config in service_kong_configuration:
-        route_config={'paths': [service_config['name']], 'methods': ['GET', 'POST']}
+        route_config={'methods[]': ['GET','POST'], 'paths[]': ['/'+service_config['name']]}
         kong_routes_url='{0}/{1}/routes'.format(kong_services_url, service_config['name'])
         requests.post(kong_routes_url, route_config)
     requests.post(kong_plugins_url, {'name':'basic-auth'})
-    requests.post(kong_consumers_url+'user1/basic-auth', {'username':'user1', 'password':'password'})
+    requests.post(kong_consumers_url+'/user1/basic-auth', {'username':'user1', 'password':'password'})
 
     return "Kong configured"
 

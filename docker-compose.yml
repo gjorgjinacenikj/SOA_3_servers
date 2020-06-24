@@ -2,6 +2,24 @@ version: '3.3'
 
 services:
 
+  consul:
+    container_name: consul
+    image: consul
+    ports:
+      - "8300:8300"
+      - "8400:8400"
+      - "8500:8500"
+    restart: always
+
+  registrator:
+    container_name: registrator
+    image: gliderlabs/registrator:master
+    volumes:
+      - "/var/run/docker.sock:/tmp/docker.sock"
+    command: consul://consul:8500
+    restart: always
+    depends_on:
+      - consul
 
   products_db:
     container_name: products_db
@@ -18,7 +36,6 @@ services:
   products:
     container_name: products
     build: ./products
-    #command: uvicorn configurer-app.products_main:app --reload --host 0.0.0.0 --port 7001
     volumes:
       - ./products/:/app/
     ports:
@@ -53,7 +70,6 @@ services:
   orders:
     container_name: orders
     build: ./orders
-    #command: uvicorn orders-app.orders_main:app --reload --host 0.0.0.0 --port 7002
     volumes:
       - ./orders/:/app/
     ports:
@@ -89,7 +105,6 @@ services:
   reviews:
     container_name: reviews
     build: ./reviews
-    #command: uvicorn reviews-app.reviews_main:app --reload --host 0.0.0.0 --port 7003
     volumes:
       - ./reviews/:/app/
     ports:
@@ -142,7 +157,8 @@ services:
 
   grafana:
     container_name: grafana
-    image: grafana/grafana:6.5.2
+    #image: grafana/grafana:6.5.2
+    build: './grafana'
     ports:
       - 3000:3000
     depends_on:
@@ -156,6 +172,8 @@ services:
     environment:
       POSTGRES_USER: kong
       POSTGRES_DB: kong
+      POSTGRES_HOST_AUTH_METHOD: trust
+
     healthcheck:
       test: pg_isready -U kong && psql -d kong -U kong -c "SELECT 1=1"
       interval: 10s
@@ -170,12 +188,15 @@ services:
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: password
     command: sh -c "(kong migrations up || kong migrations bootstrap) && touch migrations_run && sleep 30"
     healthcheck:
       test: "if [[ -f migrations_run ]] ; then exit 0; else exit 1; fi"
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
 
   kong:
     image: kong:1.0.0rc3-alpine
@@ -186,6 +207,8 @@ services:
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: password
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
@@ -200,6 +223,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
 
 
   konga:
