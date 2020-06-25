@@ -1,0 +1,2 @@
+stripe_api_key = "sk_test_NoqtYo0x4gO8n52llkc19SEm00FPHjLJBF"
+stripe_api_key_publishable="pk_test_zqGAgwv5PT48pcv57VmHfYvL00IoXLp5NC"
