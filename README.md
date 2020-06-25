@@ -3,8 +3,6 @@
 - Wait until Kong is running properly. Then, execute a GET request to 'http://localhost:7000' to configure Kong's services and authentication. You could also do this manually using Konga's GUI.
 
 ##SERVICE CONFIGURATION:
-- port 8500 - Consul
-
 - port 8000 - Kong proxy (credentials for basic authentication - username:'user1', password: 'password')
     - 'localhost:8000/products_service' - base url of products service accessed through Kong
     - 'localhost:8000/orders_service' - base url of orders service accessed through Kong
@@ -12,7 +10,7 @@
 - port 8001 - Kong admin
 - port 1337 - Konga (might need some time to stabilize)
 - port 7000 - Configurer service
-
+- port 8500 - Consul
 - port 9090 - Prometheus
 - port 3000 - Grafana (credentials - username:'admin', password: 'admin')
 - port 9200 - Elastic search
@@ -44,11 +42,13 @@ This project contains 3 main services: products, orders, and reviews, all of whi
 #### Utility services
 - **Service discovery and registry**      
     - **Consul** - Runs on port 8500. Provides service health check, discovery, configuration, and segmentation. 
-    - **Registrator** - Automatically registers and unregisters services by inspecting containers as they come online. It supports pluggable service registries, which currently includes Consul, etcd and SkyDNS 2.
+    - **Registrator** - Automatically registers and unregisters services by inspecting containers as they come online. It supports pluggable service registries, which currently includes Consul, etcd and SkyDNS.
 - **Logging and monitoring**
     - **Filebeat** - In an ELK-based logging pipeline, Filebeat plays the role of the logging agent. It is installed on the machine generating the log files, tailing them, and forwarding the data to either Logstash for more advanced processing or directly into Elasticsearch for indexing. In our case, it sends the data to Elasticsearch directly.
     - **Elasticsearch** - Runs on port 9200. Elasticsearch is where the indexing, search, and analysis magic happens. It supports structured or unstructured text, numerical data, or geospatial data. In our case, it is used to store the logs from Filebeat and access them through Kibana.
     - **Kibana** - Runs on port 5601. A visualization layer that works on top of Elasticsearch, providing users with the ability to manage the Elastic stack, and analyze and visualize the data. After a successful setup, a Filebeat index is configured for Elasticsearch. An index pattern can be defined for it and visualizations can be made from its logs.
+    - **Prometheus** - Runs on port 9090. It is a monitoring and alerting tool that scrapes metrics from instrumented jobs and uses it to either aggregate and record new time series from existing data or generate alerts. Grafana or other API consumers can be used to visualize the collected data. We use the PrometheusMiddleware in the FastAPI apps to expose a '/metrics' endpoint from which Prometheus collects health data from each of the services and sends it to Grafana.
+    - **Grafana** - Runs on port 3000. We use it to visualize the metrics from Prometheus. Once started, you have to login (username: 'admin', password, 'admin'). Prometheus is already configured, you can find it under 'datasources' and import any of the dashboards it provides.
 - **API Gateway**
     - **Kong** - Runs on ports 8000 and 8001. It is an API Gateway that provides load balancing, logging, authentication, rate-limiting, transformations, and other functions through various plugins. We use it for routing and basic authentication of the 3 services.
     - **Konga** - Runs on port 1337. A GUI for managing Kong. It can be used to setup the services, routes, consumers and authentication instead of using the Configurer endpoint.
