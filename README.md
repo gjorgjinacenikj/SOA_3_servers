@@ -1,3 +1,4 @@
+Gjorgjina Cenikj's (id: 161517) student project for the 'Service Oriented Architectures' course @ Faculty Of Computer Science and Engineering
 ##PROJECT SETUP:
 - Run 'docker-compose up --build' in the root directory
 - Wait until Kong is running properly. Then, execute a GET request to 'http://localhost:7000' to configure Kong's services and authentication. You could also do this manually using Konga's GUI.

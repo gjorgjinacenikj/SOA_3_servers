@@ -23,16 +23,11 @@
     <autoscroll-to-editor value="false" />
     <autoscroll-from-editor value="true" />
     <show-object-properties value="true" />
-    <loaded-nodes>
-      <connection connection-id="0a274df7-0560-405e-9821-ad0055e35ae8">
-        <schema name="pg_catalog" object-types="function" />
-        <schema name="public" object-types="constraint, table, sequence, dataset trigger, index, function, view, column" />
-      </connection>
-    </loaded-nodes>
+    <loaded-nodes />
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="4830c1c9-c34a-4a1e-ad53-a331b0deb450">
-      <console name="Connection" type="STANDARD" schema="public" session="Session 1"><![CDATA[create database products_db;]]></console>
+      <console name="Connection" type="STANDARD" schema="public" session="Main"><![CDATA[create database products_db;]]></console>
     </connection>
     <connection id="0a274df7-0560-405e-9821-ad0055e35ae8">
       <console name="products" type="STANDARD" schema="public" session="Main"><![CDATA[create database reviews_db;]]></console>
