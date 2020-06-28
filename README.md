@@ -1,9 +1,9 @@
 Gjorgjina Cenikj's (id: 161517) student project for the 'Service Oriented Architectures' course @ Faculty Of Computer Science and Engineering
-##PROJECT SETUP:
+## PROJECT SETUP:
 - Run 'docker-compose up --build' in the root directory
 - Wait until Kong is running properly. Then, execute a GET request to 'http://localhost:7000' to configure Kong's services and authentication. You could also do this manually using Konga's GUI.
 
-##SERVICE CONFIGURATION:
+## SERVICE CONFIGURATION:
 - port 8000 - Kong proxy (credentials for basic authentication - username:'user1', password: 'password')
     - 'localhost:8000/products_service' - base url of products service accessed through Kong
     - 'localhost:8000/orders_service' - base url of orders service accessed through Kong
@@ -17,7 +17,7 @@ Gjorgjina Cenikj's (id: 161517) student project for the 'Service Oriented Archit
 - port 9200 - Elastic search
 - port 5601 - Kibana (might need some time to stabilize)
 
-##PROJECT DETAILS:
+## PROJECT DETAILS:
 #### Main services
 This project contains 3 main services: products, orders, and reviews, all of which are FastAPI apps, and use a separate postgres database.
 - The **products service** provides information about products and does not depend on any of the two other services. 
